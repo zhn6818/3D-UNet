@@ -133,3 +133,8 @@ if __name__ == '__main__':
     start_time = time.time()
     summary(model=model, input_size=(3, 16, 128, 128), batch_size=-1, device="cpu")
     print("--- %s seconds ---" % (time.time() - start_time))
+    
+    input = torch.randn((1, 3, 16, 128, 128)).cuda()
+    model = model.cuda()
+    out = model(input)
+    print(out.shape)
