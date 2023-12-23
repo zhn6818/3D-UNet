@@ -1,4 +1,4 @@
 runs
-Datasets/*
+/Datasets
 /image
 /log
