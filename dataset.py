@@ -6,12 +6,15 @@ import tarfile
 import json
 from sklearn.utils import shuffle
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.tensorboard import SummaryWriter
 import torch
 from torch.utils.data import random_split
 from config import (
     DATASET_PATH, TASK_ID, TRAIN_VAL_TEST_SPLIT,
     TRAIN_BATCH_SIZE, VAL_BATCH_SIZE, TEST_BATCH_SIZE
 )
+
+# writer = SummaryWriter("./log/boardtest/")
 
 #Utility function to extract .tar file formats into ./Datasets directory
 def ExtractTar(Directory):
@@ -112,6 +115,13 @@ class MedicalSegmentationDecathlon(Dataset):
         label_array = label_object.get_fdata()
         label_array = np.moveaxis(label_array, -1, 0)
         proccessed_out = {'name': name, 'image': img_array, 'label': label_array} 
+        
+        # img_arrayTensor = torch.from_numpy(img_array)
+        # label_arrayTensor = torch.from_numpy(label_array)
+        # for ii in range(img_array.shape[0]):
+        #     writer.add_image("img", torch.unsqueeze(img_arrayTensor[ii, :, :],0), ii)
+        #     writer.add_image("label", torch.unsqueeze(label_arrayTensor[ii, :, :],0), ii)
+        
         if self.transform:
             if self.mode == "train":
                 proccessed_out = self.transform[0](proccessed_out)

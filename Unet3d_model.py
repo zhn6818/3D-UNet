@@ -95,7 +95,7 @@ class UNet3DModel(nn.Module):
         self.s_block7 = UpConv3DBlock(in_channels=bottleneck_channel//4, out_channels=bottleneck_channel//8)
         self.s_block8 = UpConv3DBlock(in_channels=bottleneck_channel//8, out_channels=bottleneck_channel//16)
         
-        self.conv9 = nn.Conv3d(in_channels= bottleneck_channel//16, out_channels=2, kernel_size=(3,3,3), padding=1)
+        self.conv9 = nn.Conv3d(in_channels= bottleneck_channel//16, out_channels=1, kernel_size=(3,3,3), padding=1)
         
     def forward(self, input):
         out = self.a_block1(input)
