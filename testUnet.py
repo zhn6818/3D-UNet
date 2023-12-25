@@ -18,7 +18,7 @@ if __name__ == "__main__":
     if torch.cuda.is_available() and TRAIN_CUDA:
         model = model.cuda()
 
-    model.load_state_dict(torch.load("./checkpoints/epoch99_train_loss0.02188192307949066.pth"), strict=True)
+    model.load_state_dict(torch.load("./checkpoints/epoch99_train_loss0.03923418582417071.pth"), strict=True)
     
     model.eval()
     
@@ -38,10 +38,10 @@ if __name__ == "__main__":
             torch.cuda.synchronize()
             logits = torch.squeeze(logits)
             
-            logits[logits>0] = 255
-            logits[logits<=0] = 0
             
-            logits = logits.cpu().numpy()
+            logits = (logits[0,:,:]>logits[1,:,:]).to(torch.float)
+            
+            logits = logits.cpu().numpy() * 255
             
             cv2.imwrite("./test.png",logits)
             
