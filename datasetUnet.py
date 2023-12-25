@@ -12,6 +12,8 @@ cropsize = (512,512)
 from torch.utils.tensorboard import SummaryWriter
 
 
+modelSize = 512
+
 
 class Custom(Dataset):
     def __init__(self, numSamples,cropsize=cropsize, *args, **kwargs):
@@ -24,7 +26,8 @@ class Custom(Dataset):
             ])
         self.num = numSamples
         self.indice = 0
-        self.slide = 32
+        self.slides = [32,64]
+        self.slide=None
 
 
     def __getitem__(self, index):
@@ -34,15 +37,18 @@ class Custom(Dataset):
         
         self.indice = self.indice + 1
         
-        img = torch.ones([1, 3, 16, 256, 256], dtype=torch.float32)
+        img = torch.ones([1, 3, 16, modelSize, modelSize], dtype=torch.float32)
         img *= 128
         
-        label = torch.zeros([1, 1, 1, 256, 256], dtype=torch.float32)
-        label2 = torch.ones([1, 1, 1, 256, 256], dtype=torch.float32)
+        label = torch.zeros([1, 1, 1, modelSize, modelSize], dtype=torch.float32)
+        label2 = torch.ones([1, 1, 1, modelSize, modelSize], dtype=torch.float32)
         
         intdepth = img.shape[2]
         imgw = img.shape[3]
         imgh = img.shape[4]
+        
+        rand_int = random.randint(0, 1)
+        self.slide = self.slides[rand_int]
         
         rand_num = random.randint(0, intdepth - 1)
         
