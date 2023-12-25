@@ -4,3 +4,4 @@ runs
 /log
 /checkpoints
 /test.png
+/__pycache__
