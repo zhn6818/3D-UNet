@@ -38,6 +38,7 @@ class Custom(Dataset):
         img *= 128
         
         label = torch.zeros([1, 1, 1, 256, 256], dtype=torch.float32)
+        label2 = torch.ones([1, 1, 1, 256, 256], dtype=torch.float32)
         
         intdepth = img.shape[2]
         imgw = img.shape[3]
@@ -54,13 +55,19 @@ class Custom(Dataset):
         
         label[:,:,:,rand_w:(rand_w + self.slide),rand_H:(rand_H + self.slide)] = torch.ones([1,1,1,self.slide, self.slide], dtype = torch.float32)
         
+        label2[:,:,:,rand_w:(rand_w + self.slide),rand_H:(rand_H + self.slide)] = torch.zeros([1,1,1,self.slide, self.slide], dtype = torch.float32)
+        
         # for ii in range(intdepth):
         #     writer.add_image("teestImg"+ str(self.indice), img[0,:,ii,:,:],ii)
         # writer.add_image("testLabel" + str(self.indice), label[0,0,:,:,:])
         # writer.close()
+        
+        label_ = torch.cat([label, label2], dim=1)
         img = torch.squeeze(img, 0)
-        label = torch.squeeze(label, 0)
-        return img, label
+        label_ = torch.squeeze(label_, 0)
+        return img, label_
+        # label = torch.squeeze(label, 0)
+        # return img, label
 
 
     def __len__(self):
@@ -70,7 +77,7 @@ if __name__ == "__main__":
     
     
    
-    train_dataset = Custom(1000)
+    train_dataset = Custom(10)
     trainloader = torch.utils.data.DataLoader(
     train_dataset,
     batch_size=1,

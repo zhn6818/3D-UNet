@@ -4,6 +4,7 @@ import torch.nn as nn
 from config import (
     TRAINING_EPOCH, NUM_CLASSES, IN_CHANNELS, BCE_WEIGHTS, BACKGROUND_AS_CLASS, TRAIN_CUDA
 )
+from torch import optim
 from torch.nn import CrossEntropyLoss
 from dataset import get_train_val_test_Dataloaders
 from torch.optim import Adam
@@ -33,8 +34,11 @@ elif not torch.cuda.is_available() and TRAIN_CUDA:
 train_dataset = Custom(10)
 train_dataloader = torch.utils.data.DataLoader(train_dataset,batch_size=1,shuffle=False,num_workers=1,drop_last=False,pin_memory=True)
 
-criterion = nn.BCEWithLogitsLoss()
-optimizer = Adam(params=model.parameters())
+# criterion = nn.BCEWithLogitsLoss()
+criterion = nn.CrossEntropyLoss()
+
+# optimizer = Adam(params=model.parameters())
+optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.99, weight_decay=5e-4)
 
 min_valid_loss = math.inf
 
@@ -46,9 +50,10 @@ for epoch in range(TRAINING_EPOCH):
         image, ground_truth = data
         image = image.cuda()
         ground_truth = ground_truth.cuda()
-        optimizer.zero_grad()
         target = model(image)
         loss = criterion(target, ground_truth)
+        
+        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
