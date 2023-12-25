@@ -34,7 +34,7 @@ class Custom(Dataset):
         
         self.indice = self.indice + 1
         
-        img = torch.ones([1, 3, 16, 256, 256], dtype=torch.float64)
+        img = torch.ones([1, 3, 16, 256, 256], dtype=torch.float32)
         img *= 128
         
         label = torch.zeros([1, 1, 1, 256, 256], dtype=torch.float32)
@@ -58,7 +58,8 @@ class Custom(Dataset):
         #     writer.add_image("teestImg"+ str(self.indice), img[0,:,ii,:,:],ii)
         # writer.add_image("testLabel" + str(self.indice), label[0,0,:,:,:])
         # writer.close()
-        
+        img = torch.squeeze(img, 0)
+        label = torch.squeeze(label, 0)
         return img, label
 
 
