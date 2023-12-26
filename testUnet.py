@@ -18,7 +18,7 @@ if __name__ == "__main__":
     if torch.cuda.is_available() and TRAIN_CUDA:
         model = model.cuda()
 
-    model.load_state_dict(torch.load("./checkpoints/epoch99_train_loss0.03923418582417071.pth"), strict=True)
+    model.load_state_dict(torch.load("./checkpoints/epoch99_train_loss0.022088554804213345.pth"), strict=True)
     
     model.eval()
     
