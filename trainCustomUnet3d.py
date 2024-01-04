@@ -31,8 +31,8 @@ elif not torch.cuda.is_available() and TRAIN_CUDA:
 
 
 # train_dataloader, val_dataloader, _ = get_train_val_test_Dataloaders(train_transforms= train_transforms, val_transforms=val_transforms, test_transforms= val_transforms)
-train_dataset = Custom(10)
-train_dataloader = torch.utils.data.DataLoader(train_dataset,batch_size=1,shuffle=False,num_workers=1,drop_last=False,pin_memory=True)
+train_dataset = Custom(100)
+train_dataloader = torch.utils.data.DataLoader(train_dataset,batch_size=5,shuffle=False,num_workers=1,drop_last=False,pin_memory=True)
 
 # criterion = nn.BCEWithLogitsLoss()
 criterion = nn.CrossEntropyLoss()

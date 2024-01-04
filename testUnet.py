@@ -18,11 +18,11 @@ if __name__ == "__main__":
     if torch.cuda.is_available() and TRAIN_CUDA:
         model = model.cuda()
 
-    model.load_state_dict(torch.load("./checkpoints/epoch99_train_loss0.022088554804213345.pth"), strict=True)
+    model.load_state_dict(torch.load("./checkpoints/epoch99_train_loss0.24244591034948826.pth"), strict=True)
     
     model.eval()
     
-    train_dataset = Custom(10)
+    train_dataset = Custom(100)
     train_dataloader = torch.utils.data.DataLoader(train_dataset,batch_size=1,shuffle=False,num_workers=1,drop_last=False,pin_memory=True)
     
     with torch.no_grad():
@@ -39,11 +39,11 @@ if __name__ == "__main__":
             logits = torch.squeeze(logits)
             
             
-            logits = (logits[0,:,:]>logits[1,:,:]).to(torch.float)
+            logitsr = (logits[0,:,:]>logits[1,:,:]).to(torch.float)
             
-            logits = logits.cpu().numpy() * 255
+            logitsr = logitsr.cpu().numpy() * 255
             
-            cv2.imwrite("./test.png",logits)
+            cv2.imwrite("./test.png",logitsr)
             
             print("hello")
             # logits[logits>0.5] = 1

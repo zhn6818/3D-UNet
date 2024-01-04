@@ -3,6 +3,23 @@ from torch import nn
 from torchsummary import summary
 import time
 
+
+def conv3x3x3(in_planes, out_planes, stride=1):
+    return nn.Conv3d(in_planes,
+                     out_planes,
+                     kernel_size=3,
+                     stride=stride,
+                     padding=1,
+                     bias=False)
+
+
+def conv1x1x1(in_planes, out_planes, stride=1):
+    return nn.Conv3d(in_planes,
+                     out_planes,
+                     kernel_size=1,
+                     stride=stride,
+                     bias=False)
+
 class Conv3DBlock(nn.Module):
     """
     The basic block for double 3x3x3 convolutions in the analysis path
@@ -17,10 +34,10 @@ class Conv3DBlock(nn.Module):
 
     def __init__(self, in_channels, out_channels, bottleneck = False) -> None:
         super(Conv3DBlock, self).__init__()
-        self.conv1 = nn.Conv3d(in_channels= in_channels, out_channels=out_channels, kernel_size=(3,3,3), padding=1)
-        self.bn1 = nn.BatchNorm3d(num_features=out_channels)
-        # self.conv2 = nn.Conv3d(in_channels= out_channels//2, out_channels=out_channels, kernel_size=(3,3,3), padding=1)
-        # self.bn2 = nn.BatchNorm3d(num_features=out_channels)
+        self.conv1 = nn.Conv3d(in_channels= in_channels, out_channels=out_channels//2, kernel_size=(3,3,3), padding=1)
+        self.bn1 = nn.BatchNorm3d(num_features=out_channels//2)
+        self.conv2 = nn.Conv3d(in_channels= out_channels//2, out_channels=out_channels, kernel_size=(3,3,3), padding=1)
+        self.bn2 = nn.BatchNorm3d(num_features=out_channels)
         self.relu = nn.ReLU()
         self.bottleneck = bottleneck
         if not bottleneck:
@@ -28,8 +45,14 @@ class Conv3DBlock(nn.Module):
 
     
     def forward(self, input):
+        
+        residual = input
+        
         res = self.relu(self.bn1(self.conv1(input)))
-        # res = self.relu(self.bn2(self.conv2(res)))
+        if residual.shape[1] == res.shape[1]:
+            res = res + residual
+        res = self.relu(self.bn2(self.conv2(res)))
+        
         out = None
         if not self.bottleneck:
             out = self.pooling(res)
@@ -85,10 +108,14 @@ class UNet3DModel(nn.Module):
     def __init__(self, in_channels, num_classes, level_channels=[64, 128, 256], bottleneck_channel=512) -> None:
         super(UNet3DModel, self).__init__()
         level_1_chnls, level_2_chnls, level_3_chnls = level_channels[0], level_channels[1], level_channels[2]
-        self.a_block1 = Conv3DBlock(in_channels=in_channels, out_channels=level_1_chnls)
+
+        self.conv1 = conv3x3x3(in_channels, level_1_chnls)
+
+        # self.a_block1 = Conv3DBlock(in_channels=level_1_chnls, out_channels=level_1_chnls)
         self.a_block2 = Conv3DBlock(in_channels=level_1_chnls, out_channels=level_2_chnls)
         self.a_block3 = Conv3DBlock(in_channels=level_2_chnls, out_channels=level_3_chnls)
         self.a_block4 = Conv3DBlock(in_channels=level_3_chnls, out_channels=bottleneck_channel)
+        self.a_block5 = Conv3DBlock(in_channels=bottleneck_channel, out_channels=bottleneck_channel)
         
         self.s_block5 = UpConv3DBlock(in_channels=bottleneck_channel, out_channels=bottleneck_channel//2)
         self.s_block6 = UpConv3DBlock(in_channels=bottleneck_channel//2, out_channels=bottleneck_channel//4)
@@ -98,10 +125,14 @@ class UNet3DModel(nn.Module):
         self.conv9 = nn.Conv3d(in_channels= bottleneck_channel//16, out_channels=2, kernel_size=(3,3,3), padding=1)
         
     def forward(self, input):
-        out = self.a_block1(input)
+        
+        out = self.conv1(input)
+        
+        # out = self.a_block1(out)
         out = self.a_block2(out)
         out = self.a_block3(out)
         out = self.a_block4(out)
+        out = self.a_block5(out)
         
         out = self.s_block5(out)
         out = self.s_block6(out)
