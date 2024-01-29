@@ -59,14 +59,16 @@ if __name__ == "__main__":
     
     model.eval()
     
-    video = cv2.VideoCapture('/data1/zhn/fujian/shadow1.mp4')
+    video = cv2.VideoCapture('/data1/zhn/fujian/shadow2.mp4')
  
     # 创建输出视频对象
-    output_file = '/data1/zhn/fujian/result/shadow1_result.avi'
+    output_file = '/data1/zhn/fujian/result/shadow2_result.avi'
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     fps = video.get(cv2.CAP_PROP_FPS)
-    frame_width = int(modelSize)
-    frame_height = int(modelSize)
+    # video.get(cv2.CAP_PROP_FRAME_WIDTH)
+    # video.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    frame_width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH) * 2)
+    frame_height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
     out = cv2.VideoWriter(output_file, fourcc, fps, (frame_width, frame_height), True)
     
     framecount = 0
@@ -97,6 +99,8 @@ if __name__ == "__main__":
         logitsr = logitsr[:, :,np.newaxis]
         newout = np.concatenate((logitsr, logitsr, logitsr), axis=2)
         newout = newout.astype(np.uint8)
+        newout = cv2.resize(newout, (int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), frame_height))
+        newout = np.concatenate((frame, newout), axis=1)
         # 将当前帧写入到输出视频文件中
         out.write(newout)
     
