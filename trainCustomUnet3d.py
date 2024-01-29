@@ -10,7 +10,7 @@ from dataset import get_train_val_test_Dataloaders
 from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
 from Unet3d_model import UNet3DModel
-from datasetUnet import Custom
+from datasetSg import CustomSg
 from transforms import (train_transform, train_transform_cuda,
                         val_transform, val_transform_cuda)
 
@@ -19,6 +19,12 @@ if BACKGROUND_AS_CLASS: NUM_CLASSES += 1
 writer1 = SummaryWriter("./log/boardtest1/")
 
 model = UNet3DModel(in_channels=3, num_classes=1)
+
+pretrain = "./checkpoints/multiimages_epoch992_train_loss0.14129888266324997.pth"
+
+if pretrain != "":
+     model.load_state_dict(torch.load(pretrain), strict=True)
+
 train_transforms = train_transform
 val_transforms = val_transform
 
@@ -31,14 +37,14 @@ elif not torch.cuda.is_available() and TRAIN_CUDA:
 
 
 # train_dataloader, val_dataloader, _ = get_train_val_test_Dataloaders(train_transforms= train_transforms, val_transforms=val_transforms, test_transforms= val_transforms)
-train_dataset = Custom(100)
+train_dataset = CustomSg(50)
 train_dataloader = torch.utils.data.DataLoader(train_dataset,batch_size=5,shuffle=False,num_workers=1,drop_last=False,pin_memory=True)
 
 # criterion = nn.BCEWithLogitsLoss()
 criterion = nn.CrossEntropyLoss()
 
-# optimizer = Adam(params=model.parameters())
-optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.99, weight_decay=5e-4)
+optimizer = Adam(params=model.parameters())
+# optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.99, weight_decay=5e-4)
 
 min_valid_loss = math.inf
 

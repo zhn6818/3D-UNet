@@ -1,8 +1,12 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 from Unet3d_model import UNet3DModel
 from datasetUnet import Custom
+from datasetSg import CustomSg
 from config import (
     TRAINING_EPOCH, NUM_CLASSES, IN_CHANNELS, BCE_WEIGHTS, BACKGROUND_AS_CLASS, TRAIN_CUDA
 )
@@ -18,11 +22,11 @@ if __name__ == "__main__":
     if torch.cuda.is_available() and TRAIN_CUDA:
         model = model.cuda()
 
-    model.load_state_dict(torch.load("./checkpoints/epoch99_train_loss0.24244591034948826.pth"), strict=True)
+    model.load_state_dict(torch.load("./checkpoints/epoch1042_train_loss0.04887127736583352.pth"), strict=True)
     
     model.eval()
     
-    train_dataset = Custom(100)
+    train_dataset = CustomSg(10)
     train_dataloader = torch.utils.data.DataLoader(train_dataset,batch_size=1,shuffle=False,num_workers=1,drop_last=False,pin_memory=True)
     
     with torch.no_grad():
