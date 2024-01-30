@@ -15,7 +15,7 @@ import time
 import cv2
 from collections import deque
 
-modelSize = 128
+modelSize = 224
 cropsize = (modelSize,modelSize)
 
 class MyData:
@@ -55,14 +55,14 @@ if __name__ == "__main__":
     if torch.cuda.is_available() and TRAIN_CUDA:
         model = model.cuda()
 
-    model.load_state_dict(torch.load("./checkpoints/epoch1042_train_loss0.04887127736583352.pth"), strict=True)
+    model.load_state_dict(torch.load("./checkpoints/epoch9_train_loss0.5090109063312411.pth"), strict=True)
     
     model.eval()
     
-    video = cv2.VideoCapture('/data1/zhn/fujian/shadow2.mp4')
+    video = cv2.VideoCapture('/data1/zhn/fujian/shadow3.mp4')
  
     # 创建输出视频对象
-    output_file = '/data1/zhn/fujian/result/shadow2_result.avi'
+    output_file = '/data1/zhn/fujian/result/shadow3_result.avi'
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     fps = video.get(cv2.CAP_PROP_FPS)
     # video.get(cv2.CAP_PROP_FRAME_WIDTH)

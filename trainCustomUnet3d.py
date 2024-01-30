@@ -4,6 +4,8 @@ import torch.nn as nn
 from config import (
     TRAINING_EPOCH, NUM_CLASSES, IN_CHANNELS, BCE_WEIGHTS, BACKGROUND_AS_CLASS, TRAIN_CUDA
 )
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "4"
 from torch import optim
 from torch.nn import CrossEntropyLoss
 from dataset import get_train_val_test_Dataloaders
@@ -13,6 +15,7 @@ from Unet3d_model import UNet3DModel
 from datasetSg import CustomSg
 from transforms import (train_transform, train_transform_cuda,
                         val_transform, val_transform_cuda)
+from tqdm import tqdm
 
 if BACKGROUND_AS_CLASS: NUM_CLASSES += 1
 
@@ -20,7 +23,7 @@ writer1 = SummaryWriter("./log/boardtest1/")
 
 model = UNet3DModel(in_channels=3, num_classes=1)
 
-pretrain = "./checkpoints/multiimages_epoch992_train_loss0.14129888266324997.pth"
+pretrain = "./checkpoints/epoch1042_train_loss0.04887127736583352.pth"
 
 if pretrain != "":
      model.load_state_dict(torch.load(pretrain), strict=True)
@@ -37,8 +40,9 @@ elif not torch.cuda.is_available() and TRAIN_CUDA:
 
 
 # train_dataloader, val_dataloader, _ = get_train_val_test_Dataloaders(train_transforms= train_transforms, val_transforms=val_transforms, test_transforms= val_transforms)
-train_dataset = CustomSg(50)
-train_dataloader = torch.utils.data.DataLoader(train_dataset,batch_size=5,shuffle=False,num_workers=1,drop_last=False,pin_memory=True)
+train_dataset = CustomSg(4000)
+batch = 2
+train_dataloader = torch.utils.data.DataLoader(train_dataset,batch_size=batch,shuffle=False,num_workers=1,drop_last=False,pin_memory=True)
 
 # criterion = nn.BCEWithLogitsLoss()
 criterion = nn.CrossEntropyLoss()
@@ -48,12 +52,17 @@ optimizer = Adam(params=model.parameters())
 
 min_valid_loss = math.inf
 
+
+
+
 for epoch in range(TRAINING_EPOCH):
     
     train_loss = 0.0
     model.train()
-    for data in train_dataloader:
-        image, ground_truth = data
+    loop = tqdm(enumerate(train_dataloader), total = len(train_dataloader))
+    # for data in train_dataloader:
+    #     image, ground_truth = data
+    for step, (image, ground_truth) in loop:
         image = image.cuda()
         ground_truth = ground_truth.cuda()
         target = model(image)
@@ -64,6 +73,9 @@ for epoch in range(TRAINING_EPOCH):
         optimizer.step()
 
         train_loss += loss.item()
+        
+        loop.set_description(f'Epoch [{epoch}/{TRAINING_EPOCH}]')
+        loop.set_postfix(loss=train_loss/(step+1))
     
     valid_loss = 0.0
     model.eval()

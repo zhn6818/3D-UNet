@@ -12,10 +12,12 @@ from PIL import Image
 from torch.utils.tensorboard import SummaryWriter
 
 
-modelSize = 128
+modelSize = 208
 
 cropsize = (modelSize,modelSize)
 
+def check_file_exists(file_path):
+    return os.path.exists(file_path)
 
 class CustomSg(Dataset):
     def __init__(self, numSamples,cropsize=cropsize, *args, **kwargs):
@@ -30,7 +32,7 @@ class CustomSg(Dataset):
         self.indice = 0
         self.k = 16
         self.slide=None
-        self.numbers = list(range(1, 7499))
+        self.numbers = list(range(1, 5000))
         # self.numbers_L = list(range(1, 7479))
         self.imgpath = "/data1/zhn/fujian/dataset/img/"
         self.labelpath = "/data1/zhn/fujian/dataset/label/"
@@ -53,10 +55,12 @@ class CustomSg(Dataset):
     def __getitem__(self, index):
 
 
-        writer = SummaryWriter("./log/boardtest/")
+        # writer = SummaryWriter("./log/boardtest/")
         
         # result = random.sample(self.numbers, k = self.k)
-        start = random.randint(1, 7400)
+        # start = random.randint(2, 4900)
+        start = self.indice
+        
         end = start + 16
         result = self.numbers[start:end:1]
         self.indice = self.indice + 1
@@ -66,14 +70,23 @@ class CustomSg(Dataset):
         
         i = 0
         for ii in result:
-            img_path = self.imgpath + str(ii) + ".png"
-            gt_path = self.labelpath + str(ii) + ".png"
+            img_path = self.imgpath + str(ii) + ".jpg"
+            gt_path = self.labelpath + str(ii) + ".jpg"
+            if not check_file_exists(img_path):
+                i = i + 1
+                continue
+            if not check_file_exists(gt_path):
+                i = i + 1
+                continue
             imgreal = cv2.imread(img_path)
+            # if imgreal.shape[0] != 1080:
+            #     i = i + 1
+            #     continue
             imgreal = cv2.resize(imgreal, cropsize)
             imgreal = imgreal / 255.0
             imgreal = torch.tensor(imgreal)
             imgreal = imgreal.permute(2, 0, 1)
-            writer.add_image("teestImg" + str(self.indice), imgreal,i)
+            # writer.add_image("teestImg" + str(self.indice), imgreal,i)
             img[:, i, :, :] = imgreal
             labelreal = cv2.imread(gt_path)
             labelreal = cv2.resize(labelreal, cropsize)
@@ -130,8 +143,8 @@ class CustomSg(Dataset):
         # img = torch.squeeze(img, 0)
         # label_ = torch.squeeze(label_, 0)
         
-        writer.flush()
-        writer.close()
+        # writer.flush()
+        # writer.close()
         return img, label_
         # label = torch.squeeze(label, 0)
         # return img, label 
